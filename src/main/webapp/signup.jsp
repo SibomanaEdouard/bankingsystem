@@ -5,7 +5,7 @@
 </head>
 <body>
 <h1>Bank with us</h1>
-<form action="signup" method="post">
+<form action="register" method="post">
     <label for="username">Username</label><br/>
     <input type="text" name="username" id="username" required/><br/>
     <label for="age">Age</label><br/>
