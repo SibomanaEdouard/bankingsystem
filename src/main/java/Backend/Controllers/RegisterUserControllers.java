@@ -24,7 +24,7 @@ public class RegisterUserControllers extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public RegisterUserControllers() throws SQLException {
+    public RegisterUserControllers() throws SQLException, ClassNotFoundException {
     }
 
     @Override
@@ -87,6 +87,7 @@ public class RegisterUserControllers extends HttpServlet {
                 preparedStatement.setString(5, users.getAge());
                 int result = preparedStatement.executeUpdate();
                 if (result > 0) {
+                    System.out.println("Your Registration to Bankw is successful!");
                     out.println("Your Registration to Bankw is successful!");
                     res.sendRedirect("index.jsp");
                 } else {

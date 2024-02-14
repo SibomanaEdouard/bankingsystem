@@ -13,7 +13,8 @@ import java.sql.*;
 public class DbConnection {
 
     // Establish database connection
-    public static Connection getConnection() throws SQLException {
+    public static Connection getConnection() throws SQLException, ClassNotFoundException {
+        Class.forName("org.postgresql.Driver");
         String jdbcUrl = "jdbc:postgresql://localhost:5432/banking";
         String username = "edouard";
         String password = "edouard1234";

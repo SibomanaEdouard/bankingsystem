@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 @WebServlet("/login")
 public class LoginController extends HttpServlet {
 
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         PrintWriter out = response.getWriter();
@@ -19,12 +20,15 @@ public class LoginController extends HttpServlet {
             String email = request.getParameter("email");
             String password = request.getParameter("password");
             if (email != null && password != null) {
-                out.println("Your email is " + email + " and password is " + password);
+
+                out.println("You logged successfully!");
+                response.sendRedirect("./Transaction.jsp");
             } else {
                 out.println("Please provide all credentials to continue");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            System.out.println(e.getMessage());
             out.println("Sorry, something went wrong. Please try again later!");
         }
     }
