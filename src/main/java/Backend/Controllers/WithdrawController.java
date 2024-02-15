@@ -35,14 +35,15 @@ public class WithdrawController extends HttpServlet {
         try (Statement statement = connection.createStatement()) {
             String query = "CREATE TABLE IF NOT EXISTS bank (" +
                     "email varchar(255) not null," +
-                    "amount int not null)";
+                    "amount varchar(255) not null," +
+                    "last_withdraw_time TIMESTAMP DEFAULT NULL," +
+                    "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
             statement.executeUpdate(query);
             System.out.println("Table created successfully");
         } catch (SQLException e) {
             System.out.println("Error creating table: " + e.getMessage());
         }
     }
-
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         PrintWriter out = res.getWriter();
@@ -51,13 +52,13 @@ public class WithdrawController extends HttpServlet {
         String email = (String) session.getAttribute("email");
         if (email == null) {
             out.println("User not logged in.");
-            return;
+            res.sendRedirect("./index.jsp");
         }
 
         String amountStr = req.getParameter("amount");
         if (amountStr == null || amountStr.isEmpty()) {
             out.println("Amount not provided.");
-            return;
+            res.sendRedirect("./deposit.jsp");
         }
         double amount = Double.parseDouble(amountStr);
 
@@ -91,7 +92,7 @@ public class WithdrawController extends HttpServlet {
                 preparedStatement.executeUpdate();
             } else {
                 // If the email does not exist in the database, return an error
-                out.println("User not found.");
+                out.println("You don't have any money in your account!");
                 return;
             }
 

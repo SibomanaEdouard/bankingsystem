@@ -14,5 +14,8 @@
 <h5>Welcome to Bankw </h5>
 <a href="./deposit.jsp">Deposit</a>
 <a href="./Withdraw.jsp">Withdraw</a>
+<form action="deposit" method="post">
+    <button name="operation" value="balance">Balance</button>
+</form>
 </body>
 </html>

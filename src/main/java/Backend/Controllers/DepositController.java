@@ -36,13 +36,16 @@ public class DepositController extends HttpServlet {
         try (Statement statement = connection.createStatement()) {
             String query = "CREATE TABLE IF NOT EXISTS bank (" +
                     "email varchar(255) not null," +
-                    "amount varchar(255) not null)";
+                    "amount varchar(255) not null," +
+                    "last_withdraw_time TIMESTAMP DEFAULT NULL," +
+                    "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
             statement.executeUpdate(query);
             System.out.println("Table created successfully");
         } catch (SQLException e) {
             System.out.println("Error creating table: " + e.getMessage());
         }
     }
+
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -52,69 +55,90 @@ public class DepositController extends HttpServlet {
         String email = (String) session.getAttribute("email");
         if (email == null) {
             out.println("User not logged in.");
-            return;
+            res.sendRedirect("./index.jsp");
         }
-
-        String amountStr = req.getParameter("amount");
-        if (amountStr == null || amountStr.isEmpty()) {
-            out.println("Amount not provided.");
-            return;
-        }
-        double amount = Double.parseDouble(amountStr);
-
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-
-        try {
-            connection = DbConnection.getConnection();
-
-            // Retrieve the old amount from the database
-            String selectQuery = "SELECT amount FROM bank WHERE email = ?";
-            preparedStatement = connection.prepareStatement(selectQuery);
-            preparedStatement.setString(1, email);
-            resultSet = preparedStatement.executeQuery();
-
-            double totalAmount = amount;
-            if (resultSet.next()) {
-                // If the email exists in the database, add the new amount to the old amount
-                double oldAmount = resultSet.getDouble("amount");
-                totalAmount += oldAmount;
-
-                // Update the amount in the database
-                String updateQuery = "UPDATE bank SET amount = ? WHERE email = ?";
-                preparedStatement = connection.prepareStatement(updateQuery);
-                preparedStatement.setDouble(1, totalAmount);
-                preparedStatement.setString(2, email);
-                preparedStatement.executeUpdate();
-            } else {
-                // If the email does not exist, insert a new row into the table
-                String insertQuery = "INSERT INTO bank (email, amount) VALUES (?, ?)";
-                preparedStatement = connection.prepareStatement(insertQuery);
-                preparedStatement.setString(1, email);
-                preparedStatement.setDouble(2, totalAmount);
-                preparedStatement.executeUpdate();
-            }
-
-            out.println("Deposit successful. Total amount: " + totalAmount);
-
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-            out.println("Error occurred. Please try again later.");
-        } finally {
-            // Close the database resources
+        String operation = req.getParameter("operation");
+        if ("balance".equals(operation)) {
             try {
-                if (resultSet != null) {
-                    resultSet.close();
+                connection=DbConnection.getConnection();
+                String selectQuery = "SELECT amount FROM bank WHERE email = ?";
+                preparedStatement = connection.prepareStatement(selectQuery);
+                preparedStatement.setString(1, email);
+                resultSet = preparedStatement.executeQuery();
+
+                if(resultSet.next()){
+                    double balance=resultSet.getDouble("amount");
+                    out.println("Your balance is " + balance);
+                }else {
+                    out.println("Your balance is " + 0);
                 }
-                if (preparedStatement != null) {
-                    preparedStatement.close();
+
+
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+        } else {
+            String amountStr = req.getParameter("amount");
+            if (amountStr == null || amountStr.isEmpty()) {
+                out.println("Amount not provided.");
+                return;
+            }
+            double amount = Double.parseDouble(amountStr);
+
+
+            try {
+                connection = DbConnection.getConnection();
+
+                // Retrieve the old amount from the database
+                String selectQuery = "SELECT amount FROM bank WHERE email = ?";
+                preparedStatement = connection.prepareStatement(selectQuery);
+                preparedStatement.setString(1, email);
+                resultSet = preparedStatement.executeQuery();
+
+                double totalAmount = amount;
+                if (resultSet.next()) {
+                    // If the email exists in the database, add the new amount to the old amount
+                    double oldAmount = resultSet.getDouble("amount");
+                    totalAmount += oldAmount;
+
+                    // Update the amount in the database
+                    String updateQuery = "UPDATE bank SET amount = ? WHERE email = ?";
+                    preparedStatement = connection.prepareStatement(updateQuery);
+                    preparedStatement.setDouble(1, totalAmount);
+                    preparedStatement.setString(2, email);
+                    preparedStatement.executeUpdate();
+                } else {
+                    // If the email does not exist, insert a new row into the table
+                    String insertQuery = "INSERT INTO bank (email, amount) VALUES (?, ?)";
+                    preparedStatement = connection.prepareStatement(insertQuery);
+                    preparedStatement.setString(1, email);
+                    preparedStatement.setDouble(2, totalAmount);
+                    preparedStatement.executeUpdate();
                 }
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (SQLException e) {
+
+                out.println("Deposit successful. Total amount: " + totalAmount);
+
+            } catch (SQLException | ClassNotFoundException e) {
                 e.printStackTrace();
+                out.println("Error occurred. Please try again later.");
+            } finally {
+                // Close the database resources
+                try {
+                    if (resultSet != null) {
+                        resultSet.close();
+                    }
+                    if (preparedStatement != null) {
+                        preparedStatement.close();
+                    }
+                    if (connection != null) {
+                        connection.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
