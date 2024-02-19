@@ -1,5 +1,6 @@
 package Backend.Filters;
 
+import  java.util.regex.*;
 import Backend.DbConnection.DbConnection;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -35,6 +36,10 @@ public class RegisterUserFilters implements Filter {
         String email = request.getParameter("email");
         String phone = request.getParameter("phone");
         int age = Integer.parseInt(request.getParameter("age"));
+        String password=request.getParameter("password");
+
+
+        //this is validation of password with regex
 
         try {
             // Check if the email is already in the database
@@ -50,7 +55,11 @@ public class RegisterUserFilters implements Filter {
                 response.getWriter().println("Email or phonenumber  already exists in the database. Please use a different email or phone.");
             } else if (age < 18) {
                 response.getWriter().println("Sorry! You are under 18 and you can't use our system.");
-            } else {
+            }else if(!isValidPassword(password)){
+                response.getWriter().println("Password must contain atleast one lower , upper ,number , special character and its size must be between 8 and 20");
+
+            }
+            else {
                 // If email is not in the database and age is valid, proceed with the chain
                 chain.doFilter(request, response);
             }
@@ -69,4 +78,23 @@ public class RegisterUserFilters implements Filter {
             e.printStackTrace();
         }
     }
+
+
+//this is to validate password
+
+    public static boolean isValidPassword(String pass){
+        //this to check regex
+        String regex= "^(?=.*[0-9])"
+                + "(?=.*[a-z])"
+                + "(?=.*[#$%&=*]).{8,20}$";
+
+        //this is to compile the inserted password
+        Pattern p=Pattern.compile(regex);
+        if(pass==null){
+            return false;
+        }
+        Matcher m=p.matcher(pass);
+        return  m.matches();
+    }
 }
+

@@ -49,7 +49,7 @@ public class LoginFilter implements Filter {
                 if (BCrypt.checkpw(password, hashedPasswordFromDB)) {
                     //this is to save email in the session
                     HttpSession session = ((HttpServletRequest) request).getSession();
-                    session.setAttribute("email",email);
+                    session.setAttribute("email", userResult.getString("email"));
                     // Passwords match, proceed with authentication
                     chain.doFilter(request, response);
                 } else {
@@ -78,3 +78,6 @@ public class LoginFilter implements Filter {
         }
     }
 }
+
+
+
